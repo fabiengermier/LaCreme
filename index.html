@@ -80,15 +80,20 @@
     <div class="error-message" id="error-message"></div>
 
     <script>
-        async function fetchStreamers() {
-            const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
-            const accessToken = "77sz88qe0q6qfw52vsce2xhjp1gr44";
-            const apiUrl = "https://api.twitch.tv/helix/streams?game_id=32982&language=fr";
+        const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
+        const accessToken = "77sz88qe0q6qfw52vsce2xhjp1gr44";
+        const baseUrl = "https://api.twitch.tv/helix/streams";
+        const params = `?game_id=32982&language=fr`;
 
+        async function fetchStreamers(pagination = null) {
             try {
-                console.log("Début de la requête à l'API Twitch...");
-                
-                const response = await fetch(apiUrl, {
+                const url = pagination
+                    ? `${baseUrl}${params}&after=${pagination}`
+                    : `${baseUrl}${params}`;
+
+                console.log("Requête vers Twitch API :", url);
+
+                const response = await fetch(url, {
                     method: "GET",
                     headers: {
                         "Client-ID": clientId,
@@ -103,62 +108,77 @@
                 const data = await response.json();
                 console.log("Données de l'API Twitch :", data);
 
-                const streamsBeforeFilter = data.data;
-                console.log("Nombre total de streams avant filtrage :", streamsBeforeFilter.length);
-
-                // Filtrer les streams contenant "[LaCreme]" dans le titre
-                const filteredStreamers = streamsBeforeFilter.filter(stream => {
-                    const title = stream.title || "";
-                    return title.toLowerCase().includes("[calirp]");
-                });
-
-                console.log("Streams filtrés :", filteredStreamers);
-
-                // Afficher les streams filtrés
-                renderStreamers(filteredStreamers);
+                return data;
             } catch (error) {
                 console.error("Erreur lors de la récupération des données Twitch :", error);
                 document.getElementById("error-message").textContent =
                     "Impossible de charger les streamers. Veuillez réessayer plus tard.";
-                document.getElementById("streamers").innerHTML = "";
+                return null;
             }
         }
 
-        function renderStreamers(streamers) {
-            const streamerList = document.getElementById("streamers");
-            streamerList.innerHTML = "";
+        async function renderPaginatedStreamers() {
+            let pagination = null;
+            let allStreamsFetched = false;
 
-            if (streamers.length === 0) {
-                streamerList.innerHTML = "<p>Aucun streamer trouvé avec [LaCreme].</p>";
-                return;
+            const streamerList = document.getElementById("streamers");
+
+            while (!allStreamsFetched) {
+                const data = await fetchStreamers(pagination);
+
+                if (!data) {
+                    allStreamsFetched = true;
+                    break;
+                }
+
+                const streamsBeforeFilter = data.data || [];
+                console.log("Nombre total de streams avant filtrage :", streamsBeforeFilter.length);
+
+                // Filtrer les streams contenant "[LaCreme]"
+                const filteredStreamers = streamsBeforeFilter.filter(stream => {
+                    const title = stream.title || "";
+                    return title.toLowerCase().includes("[lacreme]");
+                });
+
+                console.log("Streams filtrés :", filteredStreamers);
+
+                filteredStreamers.forEach(stream => {
+                    try {
+                        const card = document.createElement("div");
+                        card.className = "streamer-card";
+
+                        const thumbnailUrl = (stream.thumbnail_url || "")
+                            .replace("{width}", "320")
+                            .replace("{height}", "180");
+
+                        card.innerHTML = `
+                            <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
+                            <div class="streamer-info">
+                                <div class="streamer-title">${stream.title}</div>
+                                <div class="streamer-name">Par ${stream.user_name}</div>
+                                <div class="viewer-count">${stream.viewer_count} spectateurs</div>
+                            </div>
+                        `;
+                        streamerList.appendChild(card);
+                    } catch (err) {
+                        console.error("Erreur lors du rendu d'un streamer :", err);
+                    }
+                });
+
+                // Gérer la pagination
+                pagination = data.pagination && data.pagination.cursor;
+                if (!pagination) {
+                    allStreamsFetched = true;
+                }
             }
 
-            streamers.forEach(stream => {
-                try {
-                    const card = document.createElement("div");
-                    card.className = "streamer-card";
-
-                    const thumbnailUrl = (stream.thumbnail_url || "")
-                        .replace("{width}", "320")
-                        .replace("{height}", "180");
-
-                    card.innerHTML = `
-                        <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
-                        <div class="streamer-info">
-                            <div class="streamer-title">${stream.title}</div>
-                            <div class="streamer-name">Par ${stream.user_name}</div>
-                            <div class="viewer-count">${stream.viewer_count} spectateurs</div>
-                        </div>
-                    `;
-                    streamerList.appendChild(card);
-                } catch (err) {
-                    console.error("Erreur lors du rendu d'un streamer :", err);
-                }
-            });
+            if (streamerList.innerHTML.trim() === "") {
+                streamerList.innerHTML = "<p>Aucun streamer trouvé avec [LaCreme].</p>";
+            }
         }
 
         // Lancement de la fonction
-        fetchStreamers();
+        renderPaginatedStreamers();
     </script>
 </body>
 </html>
