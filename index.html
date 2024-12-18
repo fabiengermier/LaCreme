@@ -78,43 +78,49 @@
 
     <script>
         async function fetchLaCremeStreamers() {
-            const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
-            const accessToken = "77sz88qe0q6qfw52vsce2xhjp1gr44";
-            const apiUrl = "https://api.twitch.tv/helix/streams";
+    const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
+    const accessToken = "77sz88qe0q6qfw52vsce2xhjp1gr44";
+    const apiUrl = "https://api.twitch.tv/helix/streams";
 
-            try {
-                const response = await fetch(apiUrl, {
-                    method: "GET",
-                    headers: {
-                        "Client-ID": clientId,
-                        "Authorization": `Bearer ${accessToken}`,
-                    },
-                });
-                const data = await response.json();
+    try {
+        const response = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+                "Client-ID": clientId,
+                "Authorization": `Bearer ${accessToken}`,
+            },
+        });
 
-                // Filtrer les streams contenant "[CaliRP]"
-                const lacremeStreamers = data.data.filter((stream) =>
-                    stream.title.includes("[LaCreme]")
-                );
-
-                const streamerList = document.getElementById("streamers");
-                streamerList.innerHTML = "";
-
-                if (lacremeStreamers.length === 0) {
-                    streamerList.innerHTML = "<li>Aucun streamer trouvé.</li>";
-                } else {
-                    lacremeStreamers.forEach((stream) => {
-                        const li = document.createElement("li");
-                        li.textContent = `${stream.user_name} - ${stream.title} (${stream.viewer_count} viewers)`;
-                        streamerList.appendChild(li);
-                    });
-                }
-            } catch (error) {
-                console.error("Erreur lors de l'appel à l'API Twitch :", error);
-            }
+        if (!response.ok) {
+            throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
         }
 
-        fetchLaCremeStreamers();
+        const data = await response.json();
+        console.log("Data received from API:", data); // Log des données pour debug
+
+        const lacremeStreamers = data.data.filter((stream) =>
+            stream.title.toLowerCase().includes("[lacreme]") // Gestion de la casse
+        );
+
+        const streamerList = document.getElementById("streamer-list");
+        streamerList.innerHTML = "";
+
+        if (lacremeStreamers.length === 0) {
+            streamerList.innerHTML = "<li>Aucun streamer trouvé.</li>";
+        } else {
+            lacremeStreamers.forEach((stream) => {
+                const li = document.createElement("li");
+                li.textContent = `${stream.user_name} - ${stream.title} (${stream.viewer_count} viewers)`;
+                streamerList.appendChild(li);
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'appel à l'API Twitch :", error);
+        document.getElementById("streamer-list").innerHTML = "<li>Erreur lors de la récupération des données.</li>";
+    }
+}
+
+fetchLaCremeStreamers();
     </script>
 </body>
 </html>
