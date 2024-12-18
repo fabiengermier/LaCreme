@@ -80,6 +80,7 @@
 
             try {
                 console.log("Début de la requête à l'API Twitch...");
+                
                 const response = await fetch(apiUrl, {
                     method: "GET",
                     headers: {
@@ -104,7 +105,13 @@
 
                 console.log("Streams filtrés :", lacremeStreamers);
 
+                // Assurez-vous que le DOM est prêt
                 const streamerList = document.getElementById("streamers");
+                if (!streamerList) {
+                    console.error("Élément DOM introuvable pour afficher les streamers.");
+                    return;
+                }
+
                 streamerList.innerHTML = "";
 
                 if (lacremeStreamers.length === 0) {
@@ -135,7 +142,8 @@
             }
         }
 
-        fetchFrenchGTAStreamers();
+        // Utilisation de setTimeout pour s'assurer que le DOM est prêt
+        setTimeout(fetchFrenchGTAStreamers, 0);
     </script>
 </body>
 </html>
