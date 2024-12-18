@@ -4,19 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Streamers GTA 5 Français [LaCreme]</title>
+    <!-- Import Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* Styles de base */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f5dc;
+            background-color: #fdfdfd;
             color: #333;
         }
 
         h1 {
             text-align: center;
             margin-top: 20px;
-            font-size: 2em;
+            font-size: 2.5em;
+            color: #4A90E2;
         }
 
         #streamers {
@@ -28,16 +32,18 @@
             margin: auto;
         }
 
+        /* Carte de streamer */
         .streamer-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            transition: transform 0.2s;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .streamer-card:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
         }
 
         .thumbnail {
@@ -46,31 +52,40 @@
         }
 
         .streamer-info {
-            padding: 10px;
+            padding: 15px;
         }
 
         .streamer-title {
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 1.2em;
+            margin-bottom: 8px;
             color: #333;
         }
 
         .streamer-name {
-            color: #555;
-            font-size: 0.9em;
+            color: #666;
+            font-size: 1em;
         }
 
         .viewer-count {
             color: #888;
-            font-size: 0.8em;
-            margin-top: 5px;
+            font-size: 0.9em;
+            margin-top: 8px;
         }
 
+        /* Message d'erreur */
         .error-message {
             text-align: center;
-            color: red;
+            color: #e74c3c;
             margin: 20px;
+            font-size: 1.2em;
+        }
+
+        /* Chargement */
+        #loading-message {
+            text-align: center;
+            font-size: 1.2em;
+            color: #999;
         }
     </style>
 </head>
@@ -141,7 +156,7 @@
                 // Filtrer les streams contenant "[LaCreme]"
                 const filteredStreamers = streamsBeforeFilter.filter(stream => {
                     const title = stream.title || "";
-                    return title.toLowerCase().includes("[calirp]");
+                    return title.toLowerCase().includes("[lacreme]");
                 });
 
                 console.log("Streams filtrés :", filteredStreamers);
@@ -189,7 +204,7 @@
             }
         }
 
-        // Lancement de la fonction
+        // Lancement initial
         renderPaginatedStreamers();
     </script>
 </body>
