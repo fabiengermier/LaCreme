@@ -74,63 +74,66 @@
 
     <script>
         async function fetchFrenchGTAStreamers() {
-            const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
-            const accessToken = "77sz88qe0q6qfw52vsce2xhjp1gr44";
-            const apiUrl = "https://api.twitch.tv/helix/streams?game_id=32982&language=fr";
+    const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
+    const accessToken = "77sz88qe0q6qfw52vsce2xhjp1gr44";
+    const apiUrl = "https://api.twitch.tv/helix/streams?game_id=32982&language=fr";
 
-            try {
-                const response = await fetch(apiUrl, {
-                    method: "GET",
-                    headers: {
-                        "Client-ID": clientId,
-                        "Authorization": `Bearer ${accessToken}`,
-                    },
-                });
+    try {
+        console.log("Début de la requête à l'API Twitch...");
+        const response = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+                "Client-ID": clientId,
+                "Authorization": `Bearer ${accessToken}`,
+            },
+        });
 
-                if (!response.ok) {
-                    throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                console.log("Données brutes de l'API :", data);
-
-                // Filtrer les streams contenant "[LaCreme]" dans le titre
-                const lacremeStreamers = data.data.filter((stream) =>
-                    stream.title.toLowerCase().includes("cali")
-                );
-
-                const streamerList = document.getElementById("streamers");
-                streamerList.innerHTML = "";
-
-                if (lacremeStreamers.length === 0) {
-                    streamerList.innerHTML = "<p>Aucun streamer trouvé.</p>";
-                } else {
-                    lacremeStreamers.forEach((stream) => {
-                        const card = document.createElement("div");
-                        card.className = "streamer-card";
-
-                        const thumbnailUrl = stream.thumbnail_url
-                            .replace("{width}", "320")
-                            .replace("{height}", "180");
-
-                        card.innerHTML = `
-                            <img class="thumbnail" src="${thumbnailUrl}" alt="${stream.user_name}">
-                            <div class="streamer-info">
-                                <div class="streamer-title">${stream.title}</div>
-                                <div class="streamer-name">Par ${stream.user_name}</div>
-                                <div class="viewer-count">${stream.viewer_count} spectateurs</div>
-                            </div>
-                        `;
-                        streamerList.appendChild(card);
-                    });
-                }
-            } catch (error) {
-                console.error("Erreur lors de l'appel à l'API Twitch :", error);
-                document.getElementById("streamers").innerHTML = "<p>Erreur lors de la récupération des données.</p>";
-            }
+        if (!response.ok) {
+            throw new Error(`Erreur API : ${response.status} ${response.statusText}`);
         }
 
-        fetchFrenchGTAStreamers();
+        const data = await response.json();
+        console.log("Données retournées :", data);
+
+        // Filtrer les streams contenant "[LaCreme]"
+        const lacremeStreamers = data.data.filter((stream) =>
+            stream.title.toLowerCase().includes("cali")
+        );
+
+        console.log("Streams filtrés :", lacremeStreamers);
+
+        const streamerList = document.getElementById("streamer-list");
+        streamerList.innerHTML = "";
+
+        if (lacremeStreamers.length === 0) {
+            streamerList.innerHTML = "<p>Aucun streamer trouvé.</p>";
+        } else {
+            lacremeStreamers.forEach((stream) => {
+                const card = document.createElement("div");
+                card.className = "streamer-card";
+
+                const thumbnailUrl = stream.thumbnail_url
+                    .replace("{width}", "320")
+                    .replace("{height}", "180");
+
+                card.innerHTML = `
+                    <img class="thumbnail" src="${thumbnailUrl}" alt="${stream.user_name}">
+                    <div class="streamer-info">
+                        <div class="streamer-title">${stream.title}</div>
+                        <div class="streamer-name">Par ${stream.user_name}</div>
+                        <div class="viewer-count">${stream.viewer_count} spectateurs</div>
+                    </div>
+                `;
+                streamerList.appendChild(card);
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'appel à l'API Twitch :", error);
+        document.getElementById("streamer-list").innerHTML = "<p>Erreur lors de la récupération des données.</p>";
+    }
+}
+
+fetchFrenchGTAStreamers();
     </script>
 </body>
 </html>
