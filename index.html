@@ -76,7 +76,7 @@
 </head>
 <body>
     <h1>Streamers GTA 5 Français [LaCreme]</h1>
-    <div id="loading-message" style="text-align: center;">Chargement des streamers...</div>
+    <div id="loading-message">Chargement des streamers...</div>
     <div id="streamers"></div>
     <div class="error-message" id="error-message"></div>
 
@@ -86,7 +86,6 @@
         const baseUrl = "https://api.twitch.tv/helix/streams";
         const params = `?game_id=32982&language=fr`;
 
-        let pagination = null;
         let firstStreamRendered = false;
 
         async function fetchStreamers(pagination = null) {
@@ -122,55 +121,75 @@
         }
 
         async function renderPaginatedStreamers() {
+            let pagination = null;
+            let allStreamsFetched = false;
+
             const streamerList = document.getElementById("streamers");
             const loadingMessage = document.getElementById("loading-message");
 
-            const data = await fetchStreamers(pagination);
-            if (!data) {
-                return;
+            while (!allStreamsFetched) {
+                const data = await fetchStreamers(pagination);
+
+                if (!data) {
+                    allStreamsFetched = true;
+                    break;
+                }
+
+                const streamsBeforeFilter = data.data || [];
+                console.log("Nombre total de streams avant filtrage :", streamsBeforeFilter.length);
+
+                // Filtrer les streams contenant "[LaCreme]"
+                const filteredStreamers = streamsBeforeFilter.filter(stream => {
+                    const title = stream.title || "";
+                    return title.toLowerCase().includes("[calirp]");
+                });
+
+                console.log("Streams filtrés :", filteredStreamers);
+
+                filteredStreamers.forEach(stream => {
+                    try {
+                        const card = document.createElement("div");
+                        card.className = "streamer-card";
+
+                        const thumbnailUrl = (stream.thumbnail_url || "")
+                            .replace("{width}", "320")
+                            .replace("{height}", "180");
+
+                        card.innerHTML = `
+                            <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
+                            <div class="streamer-info">
+                                <div class="streamer-title">${stream.title}</div>
+                                <div class="streamer-name">Par ${stream.user_name}</div>
+                                <div class="viewer-count">${stream.viewer_count} spectateurs</div>
+                            </div>
+                        `;
+                        streamerList.appendChild(card);
+
+                        // Supprimer le message de chargement dès le premier stream
+                        if (!firstStreamRendered && loadingMessage) {
+                            loadingMessage.style.display = "none";
+                            firstStreamRendered = true;
+                        }
+                    } catch (err) {
+                        console.error("Erreur lors du rendu d'un streamer :", err);
+                    }
+                });
+
+                // Gérer la pagination
+                pagination = data.pagination && data.pagination.cursor;
+                if (!pagination) {
+                    allStreamsFetched = true;
+                }
             }
 
-            const streamsBeforeFilter = data.data || [];
-            const filteredStreamers = streamsBeforeFilter.filter(stream => {
-                const title = stream.title || "";
-                return title.toLowerCase().includes("[calirp]");
-            });
-
-            filteredStreamers.forEach(stream => {
-                const card = document.createElement("div");
-                card.className = "streamer-card";
-
-                const thumbnailUrl = (stream.thumbnail_url || "")
-                    .replace("{width}", "320")
-                    .replace("{height}", "180");
-
-                card.innerHTML = `
-                    <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
-                    <div class="streamer-info">
-                        <div class="streamer-title">${stream.title}</div>
-                        <div class="streamer-name">Par ${stream.user_name}</div>
-                        <div class="viewer-count">${stream.viewer_count} spectateurs</div>
-                    </div>
-                `;
-
-                streamerList.appendChild(card);
-
-                // Supprimer le message de chargement dès le premier stream
-                if (!firstStreamRendered && loadingMessage) {
-                    loadingMessage.style.display = "none";
-                    firstStreamRendered = true;
-                }
-            });
-
-            pagination = data.pagination && data.pagination.cursor;
-
-            if (!firstStreamRendered && !pagination) {
+            // Si aucun streamer n'a été rendu, afficher un message
+            if (!firstStreamRendered) {
                 loadingMessage.style.display = "none";
                 streamerList.innerHTML = "<p>Aucun streamer trouvé avec [LaCreme].</p>";
             }
         }
 
-        // Lancement initial
+        // Lancement de la fonction
         renderPaginatedStreamers();
     </script>
 </body>
