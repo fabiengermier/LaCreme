@@ -20,7 +20,7 @@
             text-align: center;
             margin-top: 20px;
             font-size: 2.5em;
-            color: #4A90E2;
+            color: #40E0D0; /* Bleu turquoise */
         }
 
         #streamers {
@@ -49,6 +49,7 @@
         .thumbnail {
             width: 100%;
             height: auto;
+            cursor: pointer;
         }
 
         .streamer-info {
@@ -156,7 +157,7 @@
                 // Filtrer les streams contenant "[LaCreme]"
                 const filteredStreamers = streamsBeforeFilter.filter(stream => {
                     const title = stream.title || "";
-                    return title.toLowerCase().includes("[calirp]");
+                    return title.toLowerCase().includes("[lacreme]");
                 });
 
                 console.log("Streams filtrés :", filteredStreamers);
@@ -170,8 +171,12 @@
                             .replace("{width}", "320")
                             .replace("{height}", "180");
 
+                        const twitchUrl = `https://www.twitch.tv/${stream.user_name}`;
+
                         card.innerHTML = `
-                            <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
+                            <a href="${twitchUrl}" target="_blank">
+                                <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
+                            </a>
                             <div class="streamer-info">
                                 <div class="streamer-title">${stream.title}</div>
                                 <div class="streamer-name">Par ${stream.user_name}</div>
