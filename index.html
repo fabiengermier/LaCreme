@@ -86,6 +86,8 @@
         const baseUrl = "https://api.twitch.tv/helix/streams";
         const params = `?game_id=32982&language=fr`;
 
+        let firstStreamRendered = false;
+
         async function fetchStreamers(pagination = null) {
             try {
                 const url = pagination
@@ -136,7 +138,7 @@
                 const streamsBeforeFilter = data.data || [];
                 console.log("Nombre total de streams avant filtrage :", streamsBeforeFilter.length);
 
-                // Filtrer les streams contenant "[calirp]"
+                // Filtrer les streams contenant "[LaCreme]"
                 const filteredStreamers = streamsBeforeFilter.filter(stream => {
                     const title = stream.title || "";
                     return title.toLowerCase().includes("[calirp]");
@@ -162,6 +164,12 @@
                             </div>
                         `;
                         streamerList.appendChild(card);
+
+                        // Supprimer le message de chargement dès le premier stream
+                        if (!firstStreamRendered && loadingMessage) {
+                            loadingMessage.style.display = "none";
+                            firstStreamRendered = true;
+                        }
                     } catch (err) {
                         console.error("Erreur lors du rendu d'un streamer :", err);
                     }
@@ -174,12 +182,9 @@
                 }
             }
 
-            // Masquer le message de chargement
-            if (loadingMessage) {
+            // Si aucun streamer n'a été rendu, afficher un message
+            if (!firstStreamRendered) {
                 loadingMessage.style.display = "none";
-            }
-
-            if (streamerList.innerHTML.trim() === "") {
                 streamerList.innerHTML = "<p>Aucun streamer trouvé avec [LaCreme].</p>";
             }
         }
