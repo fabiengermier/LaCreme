@@ -1,130 +1,112 @@
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaCreme RP Launcher</title>
+    <title>LaCreme Streamers</title>
     <style>
-        /* Body */
+        :root {
+            --creme-color: #f5f5dc;
+            --text-color: #333;
+            --highlight-color: #ff8c00;
+            --border-color: #ccc;
+        }
+
         body {
             margin: 0;
-            background: url('background.png') no-repeat center center fixed;
-            background-size: cover;
-            color: white;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-
-        /* Barre de titre personnalisée */
-        .title-bar {
-            height: 30px;
-            background: #333;
-            color: white;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--creme-color);
+            color: var(--text-color);
             display: flex;
-            justify-content: flex-end;
+            flex-direction: column;
             align-items: center;
-            padding: 0 10px;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
+            min-height: 100vh;
         }
 
-        .title-bar button {
-            background: none;
-            color: white;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            margin-left: 10px;
+        h1 {
+            margin-top: 20px;
+            font-size: 2.5em;
         }
 
-        .title-bar button:hover {
-            color: #57C6D9;
+        #streamers {
+            margin: 20px auto;
+            width: 90%;
+            max-width: 800px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Conteneur de l'iframe */
-        .iframe-container {
-            margin: 40px 20px 70px 20px;
-            position: absolute;
-            top: 40px;
-            bottom: 70px;
-            left: 20px;
-            right: 20px;
-            border: 4px solid #F5E7D6;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Style commun pour les boutons */
-        .button-common {
-            background: #57C6D9;
-            color: white;
-            font-size: 18px;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0px 6px 0px #4BA4B5, 0px 8px 15px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            margin: 0 10px;
-        }
-
-        .button-common:hover {
-            background: #4BA4B5;
-            box-shadow: 0px 4px 0px #3E8C97;
-            transform: translateY(2px);
-        }
-
-        .button-container {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+        .streamer {
             display: flex;
-            justify-content: center;
-            z-index: 10;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .streamer:last-child {
+            border-bottom: none;
+        }
+
+        .streamer-name {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .streamer-title {
+            flex: 1;
+            margin-left: 10px;
+            color: var(--highlight-color);
+            font-size: 1em;
+        }
+
+        .streamer-viewers {
+            font-size: 0.9em;
+            color: var(--text-color);
         }
     </style>
 </head>
 <body>
-    <!-- Barre de titre personnalisée -->
-    <div class="title-bar">
-        <button onclick="windowAPI.minimize()">—</button>
-        <button onclick="windowAPI.close()">✕</button>
-    </div>
-
-    <!-- Conteneur pour les boutons -->
-    <div class="button-container">
-        <button class="button-common" onclick="loadSite()">Live</button>
-        <button class="button-common" onclick="connectToServer()">Connection</button>
-    </div>
-
-    <!-- Conteneur de l'iframe pour Live -->
-    <div id="iframe-container" class="iframe-container" style="display: none;">
-        <iframe id="live-iframe" src=""></iframe>
-    </div>
+    <h1>Streamers LaCreme</h1>
+    <div id="streamers">Chargement...</div>
 
     <script>
-        function loadSite() {
-            const iframeContainer = document.getElementById('iframe-container');
-            const iframe = document.getElementById('live-iframe');
-            iframe.src = "https://dulcet-axolotl-d2262a.netlify.app";
-            iframeContainer.style.display = "block";
+        async function fetchStreamers() {
+            try {
+                const response = await fetch("http://localhost:3000/lacreme"); // Replace with your API endpoint
+                const streamers = await response.json();
+
+                const container = document.getElementById("streamers");
+                container.innerHTML = ""; // Clear loading text
+
+                if (streamers.length === 0) {
+                    container.innerHTML = "<p>Aucun streamer trouvé.</p>";
+                    return;
+                }
+
+                streamers.forEach(streamer => {
+                    const div = document.createElement("div");
+                    div.className = "streamer";
+                    div.innerHTML = `
+                        <div class="streamer-name">${streamer.user_name}</div>
+                        <div class="streamer-title">${streamer.title}</div>
+                        <div class="streamer-viewers">${streamer.viewer_count} viewers</div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error("Error fetching streamers:", error);
+                document.getElementById("streamers").innerHTML = "<p>Erreur lors de la récupération des streamers.</p>";
+            }
         }
 
-        function connectToServer() {
-            window.fivemAPI.connectToServer();
-        }
+        fetchStreamers();
     </script>
 </body>
 </html>
