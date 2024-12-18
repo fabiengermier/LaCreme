@@ -20,32 +20,57 @@
         }
 
         #streamers {
-            width: 80%;
-            margin: 20px auto;
-            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            width: 90%;
+            margin: auto;
+        }
+
+        .streamer-card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
         }
 
-        ul {
-            list-style-type: none;
-            padding: 0;
+        .streamer-card:hover {
+            transform: scale(1.05);
         }
 
-        li {
-            margin: 10px 0;
+        .thumbnail {
+            width: 100%;
+            height: auto;
+        }
+
+        .streamer-info {
             padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        }
+
+        .streamer-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .streamer-name {
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .viewer-count {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <h1>Streamers GTA 5 Français [LaCreme]</h1>
-    <div id="streamers">
-        <ul id="streamer-list">Chargement des streamers...</ul>
-    </div>
+    <div id="streamers">Chargement des streamers...</div>
 
     <script>
         async function fetchFrenchGTAStreamers() {
@@ -71,26 +96,37 @@
 
                 // Filtrer les streams contenant "[LaCreme]" dans le titre
                 const lacremeStreamers = data.data.filter((stream) =>
-                    stream.title.toLowerCase().includes("cali") // Filtre sur le titre
+                    stream.title.toLowerCase().includes("[lacreme]")
                 );
 
-                console.log("Streamers filtrés :", lacremeStreamers);
-
-                const streamerList = document.getElementById("streamer-list");
+                const streamerList = document.getElementById("streamers");
                 streamerList.innerHTML = "";
 
                 if (lacremeStreamers.length === 0) {
-                    streamerList.innerHTML = "<li>Aucun streamer trouvé.</li>";
+                    streamerList.innerHTML = "<p>Aucun streamer trouvé.</p>";
                 } else {
                     lacremeStreamers.forEach((stream) => {
-                        const li = document.createElement("li");
-                        li.textContent = `${stream.user_name} - ${stream.title} (${stream.viewer_count} viewers)`;
-                        streamerList.appendChild(li);
+                        const card = document.createElement("div");
+                        card.className = "streamer-card";
+
+                        const thumbnailUrl = stream.thumbnail_url
+                            .replace("{width}", "320")
+                            .replace("{height}", "180");
+
+                        card.innerHTML = `
+                            <img class="thumbnail" src="${thumbnailUrl}" alt="${stream.user_name}">
+                            <div class="streamer-info">
+                                <div class="streamer-title">${stream.title}</div>
+                                <div class="streamer-name">Par ${stream.user_name}</div>
+                                <div class="viewer-count">${stream.viewer_count} spectateurs</div>
+                            </div>
+                        `;
+                        streamerList.appendChild(card);
                     });
                 }
             } catch (error) {
                 console.error("Erreur lors de l'appel à l'API Twitch :", error);
-                document.getElementById("streamer-list").innerHTML = "<li>Erreur lors de la récupération des données.</li>";
+                document.getElementById("streamers").innerHTML = "<p>Erreur lors de la récupération des données.</p>";
             }
         }
 
