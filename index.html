@@ -76,7 +76,8 @@
 </head>
 <body>
     <h1>Streamers GTA 5 Français [LaCreme]</h1>
-    <div id="streamers">Chargement des streamers...</div>
+    <div id="loading-message">Chargement des streamers...</div>
+    <div id="streamers"></div>
     <div class="error-message" id="error-message"></div>
 
     <script>
@@ -122,6 +123,7 @@
             let allStreamsFetched = false;
 
             const streamerList = document.getElementById("streamers");
+            const loadingMessage = document.getElementById("loading-message");
 
             while (!allStreamsFetched) {
                 const data = await fetchStreamers(pagination);
@@ -137,7 +139,7 @@
                 // Filtrer les streams contenant "[LaCreme]"
                 const filteredStreamers = streamsBeforeFilter.filter(stream => {
                     const title = stream.title || "";
-                    return title.toLowerCase().includes("[calirp]");
+                    return title.toLowerCase().includes("[lacreme]");
                 });
 
                 console.log("Streams filtrés :", filteredStreamers);
@@ -170,6 +172,11 @@
                 if (!pagination) {
                     allStreamsFetched = true;
                 }
+            }
+
+            // Masquer le message de chargement
+            if (loadingMessage) {
+                loadingMessage.style.display = "none";
             }
 
             if (streamerList.innerHTML.trim() === "") {
