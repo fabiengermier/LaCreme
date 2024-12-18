@@ -89,7 +89,9 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Erreur API : ${response.status} ${response.statusText}`);
+                    console.error(`Erreur API : ${response.status} ${response.statusText}`);
+                    document.getElementById("streamers").innerHTML = "<p>Erreur lors de la requête à l'API Twitch.</p>";
+                    return;
                 }
 
                 const data = await response.json();
@@ -97,7 +99,7 @@
 
                 // Filtrer les streams contenant "[LaCreme]"
                 const lacremeStreamers = data.data.filter((stream) =>
-                    stream.title.toLowerCase().includes("[calirp]")
+                    stream.title.toLowerCase().includes("[lacreme]")
                 );
 
                 console.log("Streams filtrés :", lacremeStreamers);
@@ -128,8 +130,8 @@
                     });
                 }
             } catch (error) {
-                console.error("Erreur lors de l'appel à l'API Twitch :", error);
-                document.getElementById("streamer-list").innerHTML = "<p>Erreur lors de la récupération des données.</p>";
+                console.error("Erreur lors de la requête fetch :", error);
+                document.getElementById("streamers").innerHTML = "<p>Erreur lors de la récupération des données.</p>";
             }
         }
 
