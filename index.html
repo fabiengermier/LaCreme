@@ -97,9 +97,8 @@
 
         const data = await response.json();
         console.log("Data received from API:", data); // Log des données pour debug
-
+        console.log(data.data);
         const lacremeStreamers = data.data.filter((stream) =>
-            console.log(stream.title.toLowerCase());
             stream.title.toLowerCase().includes("Cali") // Gestion de la casse
         );
 
