@@ -24,7 +24,7 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             padding: 20px;
-            width: 10%;
+            width: 90%;
             margin: auto;
         }
 
@@ -86,6 +86,8 @@
             const apiUrl = "https://api.twitch.tv/helix/streams?game_id=32982&language=fr";
 
             try {
+                console.log("Début de la requête à l'API Twitch...");
+                
                 const response = await fetch(apiUrl, {
                     method: "GET",
                     headers: {
@@ -101,10 +103,18 @@
                 const data = await response.json();
                 console.log("Données de l'API Twitch :", data);
 
-                const filteredStreamers = data.data.filter(stream =>
-                    stream.title.toLowerCase().includes("[calirp]")
-                );
+                const streamsBeforeFilter = data.data;
+                console.log("Nombre total de streams avant filtrage :", streamsBeforeFilter.length);
 
+                // Filtrer les streams contenant "[LaCreme]" dans le titre
+                const filteredStreamers = streamsBeforeFilter.filter(stream => {
+                    const title = stream.title || "";
+                    return title.toLowerCase().includes("[lacreme]");
+                });
+
+                console.log("Streams filtrés :", filteredStreamers);
+
+                // Afficher les streams filtrés
                 renderStreamers(filteredStreamers);
             } catch (error) {
                 console.error("Erreur lors de la récupération des données Twitch :", error);
@@ -124,22 +134,26 @@
             }
 
             streamers.forEach(stream => {
-                const card = document.createElement("div");
-                card.className = "streamer-card";
+                try {
+                    const card = document.createElement("div");
+                    card.className = "streamer-card";
 
-                const thumbnailUrl = stream.thumbnail_url
-                    .replace("{width}", "320")
-                    .replace("{height}", "180");
+                    const thumbnailUrl = (stream.thumbnail_url || "")
+                        .replace("{width}", "320")
+                        .replace("{height}", "180");
 
-                card.innerHTML = `
-                    <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
-                    <div class="streamer-info">
-                        <div class="streamer-title">${stream.title}</div>
-                        <div class="streamer-name">Par ${stream.user_name}</div>
-                        <div class="viewer-count">${stream.viewer_count} spectateurs</div>
-                    </div>
-                `;
-                streamerList.appendChild(card);
+                    card.innerHTML = `
+                        <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
+                        <div class="streamer-info">
+                            <div class="streamer-title">${stream.title}</div>
+                            <div class="streamer-name">Par ${stream.user_name}</div>
+                            <div class="viewer-count">${stream.viewer_count} spectateurs</div>
+                        </div>
+                    `;
+                    streamerList.appendChild(card);
+                } catch (err) {
+                    console.error("Erreur lors du rendu d'un streamer :", err);
+                }
             });
         }
 
