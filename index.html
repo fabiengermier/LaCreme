@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaCreme RP Launcher</title>
+    <style>
+        /* Body */
+        body {
+            margin: 0;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Barre de titre personnalisée */
+        .title-bar {
+            height: 30px;
+            background: #333;
+            color: white;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 10px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .title-bar button {
+            background: none;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .title-bar button:hover {
+            color: #57C6D9;
+        }
+
+        /* Conteneur de l'iframe */
+        .iframe-container {
+            margin: 40px 20px 70px 20px;
+            position: absolute;
+            top: 40px;
+            bottom: 70px;
+            left: 20px;
+            right: 20px;
+            border: 4px solid #F5E7D6;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Style commun pour les boutons */
+        .button-common {
+            background: #57C6D9;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0px 6px 0px #4BA4B5, 0px 8px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            margin: 0 10px;
+        }
+
+        .button-common:hover {
+            background: #4BA4B5;
+            box-shadow: 0px 4px 0px #3E8C97;
+            transform: translateY(2px);
+        }
+
+        .button-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barre de titre personnalisée -->
+    <div class="title-bar">
+        <button onclick="windowAPI.minimize()">—</button>
+        <button onclick="windowAPI.close()">✕</button>
+    </div>
+
+    <!-- Conteneur pour les boutons -->
+    <div class="button-container">
+        <button class="button-common" onclick="loadSite()">Live</button>
+        <button class="button-common" onclick="connectToServer()">Connection</button>
+    </div>
+
+    <!-- Conteneur de l'iframe pour Live -->
+    <div id="iframe-container" class="iframe-container" style="display: none;">
+        <iframe id="live-iframe" src=""></iframe>
+    </div>
+
+    <script>
+        function loadSite() {
+            const iframeContainer = document.getElementById('iframe-container');
+            const iframe = document.getElementById('live-iframe');
+            iframe.src = "https://dulcet-axolotl-d2262a.netlify.app";
+            iframeContainer.style.display = "block";
+        }
+
+        function connectToServer() {
+            window.fivemAPI.connectToServer();
+        }
+    </script>
+</body>
+</html>
