@@ -77,36 +77,44 @@
     <div id="streamers">Chargement...</div>
 
     <script>
-        async function fetchStreamers() {
+        async function fetchLaCremeStreamers() {
+            const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
+            const accessToken = "77sz88qe0q6qfw52vsce2xhjp1gr44";
+            const apiUrl = "https://api.twitch.tv/helix/streams";
+
             try {
-                const response = await fetch("http://localhost:3000/lacreme"); // Replace with your API endpoint
-                const streamers = await response.json();
-
-                const container = document.getElementById("streamers");
-                container.innerHTML = ""; // Clear loading text
-
-                if (streamers.length === 0) {
-                    container.innerHTML = "<p>Aucun streamer trouvé.</p>";
-                    return;
-                }
-
-                streamers.forEach(streamer => {
-                    const div = document.createElement("div");
-                    div.className = "streamer";
-                    div.innerHTML = `
-                        <div class="streamer-name">${streamer.user_name}</div>
-                        <div class="streamer-title">${streamer.title}</div>
-                        <div class="streamer-viewers">${streamer.viewer_count} viewers</div>
-                    `;
-                    container.appendChild(div);
+                const response = await fetch(apiUrl, {
+                    method: "GET",
+                    headers: {
+                        "Client-ID": clientId,
+                        "Authorization": `Bearer ${accessToken}`,
+                    },
                 });
+                const data = await response.json();
+
+                // Filtrer les streams contenant "[LaCreme]"
+                const lacremeStreamers = data.data.filter((stream) =>
+                    stream.title.includes("[LaCreme]")
+                );
+
+                const streamerList = document.getElementById("streamers");
+                streamerList.innerHTML = "";
+
+                if (lacremeStreamers.length === 0) {
+                    streamerList.innerHTML = "<li>Aucun streamer trouvé.</li>";
+                } else {
+                    lacremeStreamers.forEach((stream) => {
+                        const li = document.createElement("li");
+                        li.textContent = `${stream.user_name} - ${stream.title} (${stream.viewer_count} viewers)`;
+                        streamerList.appendChild(li);
+                    });
+                }
             } catch (error) {
-                console.error("Error fetching streamers:", error);
-                document.getElementById("streamers").innerHTML = "<p>Erreur lors de la récupération des streamers.</p>";
+                console.error("Erreur lors de l'appel à l'API Twitch :", error);
             }
         }
 
-        fetchStreamers();
+        fetchLaCremeStreamers();
     </script>
 </body>
 </html>
