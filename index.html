@@ -163,7 +163,7 @@
 
             const data = await response.json();
             const playerCount = data.Data.clients || 0; // Nombre de joueurs connectés
-            document.getElementById("player-count").textContent = `Joueurs connectés : ${playerCount}`;
+            document.getElementById("player-count").textContent = `Joueurs connectés : ${playerCount} / 180`;
         } catch (error) {
             console.error("Erreur :", error);
             document.getElementById("player-count").textContent = "Impossible de récupérer les joueurs.";
