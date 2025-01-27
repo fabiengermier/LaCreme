@@ -145,20 +145,21 @@
 
         // Simuler une récupération des joueurs connectés
         async function fetchPlayerCount() {
-    const apiUrl = "https://cors-anywhere.herokuapp.com/http://49.12.169.210:30300/info.json"; // Remplacez avec l'IP et le port de votre serveur
+        const apiUrl = "https://servers-frontend.fivem.net/api/servers/single/476pjo"; // Remplace <endpointID> par le bon ID
 
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error("Erreur lors de la récupération des données du serveur.");
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error("Erreur lors de la récupération des données du serveur.");
 
-        const data = await response.json();
-        const playerCount = data.clients; // Nombre de joueurs connectés
-        document.getElementById("player-count").textContent = `Joueurs connectés : ${playerCount}`;
-    } catch (error) {
-        console.error("Erreur :", error);
-        document.getElementById("player-count").textContent = "Impossible de récupérer les joueurs.";
+            const data = await response.json();
+            const playerCount = data.Data.clients || 0; // Nombre de joueurs connectés
+            document.getElementById("player-count").textContent = `Joueurs connectés : ${playerCount}`;
+        } catch (error) {
+            console.error("Erreur :", error);
+            document.getElementById("player-count").textContent = "Impossible de récupérer les joueurs.";
+        }
     }
-}
+
 
         function connectToServer() {
             // Remplacez l'adresse par celle de votre serveur FiveM
