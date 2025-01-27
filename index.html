@@ -17,11 +17,43 @@
         }
 
         h1 {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 2.5em;
+            margin: 0;
+            font-size: 2em;
             color: black;
             text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.5);
+        }
+
+        /* Barre d'en-tête */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 10px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header .players {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .header .connect-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .header .connect-btn:hover {
+            background-color: #2980b9;
         }
 
         #streamers {
@@ -93,7 +125,12 @@
     </style>
 </head>
 <body>
-    <h1>Streamers [LaCremeRP]</h1>
+    <div class="header">
+        <div class="players" id="player-count">Joueurs connectés : 0</div>
+        <h1>Streamers [LaCremeRP]</h1>
+        <button class="connect-btn" onclick="connectToServer()">Se connecter au serveur</button>
+    </div>
+
     <div id="loading-message">Chargement des streamers...</div>
     <div id="streamers"></div>
     <div class="error-message" id="error-message"></div>
@@ -105,6 +142,28 @@
         const params = `?game_id=32982&language=fr`;
 
         let firstStreamRendered = false;
+
+        // Simuler une récupération des joueurs connectés
+        async function fetchPlayerCount() {
+    const apiUrl = "http://49.12.169.210:30300//info.json"; // Remplacez avec l'IP et le port de votre serveur
+
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Erreur lors de la récupération des données du serveur.");
+
+        const data = await response.json();
+        const playerCount = data.clients; // Nombre de joueurs connectés
+        document.getElementById("player-count").textContent = `Joueurs connectés : ${playerCount}`;
+    } catch (error) {
+        console.error("Erreur :", error);
+        document.getElementById("player-count").textContent = "Impossible de récupérer les joueurs.";
+    }
+}
+
+        function connectToServer() {
+            // Remplacez l'adresse par celle de votre serveur FiveM
+            window.location.href = "fivem://connect/49.12.169.210:30300";
+        }
 
         async function fetchStreamers(pagination = null) {
             try {
@@ -212,6 +271,7 @@
         }
 
         // Lancement initial
+        fetchPlayerCount();
         renderPaginatedStreamers();
     </script>
 </body>
