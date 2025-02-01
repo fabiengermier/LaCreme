@@ -168,6 +168,10 @@
             console.error("Erreur :", error);
             document.getElementById("player-count").textContent = "Impossible de récupérer les joueurs.";
         }
+
+            setTimeout(() => {
+            fetchPlayerCount();
+        }, 30000);
     }
 
 
