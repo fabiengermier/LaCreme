@@ -146,150 +146,178 @@
     <div class="error-message" id="error-message"></div>
 
     <script>
-        const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
-        const accessToken = "bz37wu9u8qwmeux0rw2rzsza0yo0sq";
-        const baseUrl = "https://api.twitch.tv/helix/streams";
-        const params = `?game_id=32982&language=fr`;
+    const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
+    const clientSecret = "l2age2j6nq3cvl76yprtvk2xoswaw0";
+    let accessToken = "bz37wu9u8qwmeux0rw2rzsza0yo0sq"; // Ton token actuel
+    let refreshToken = "q0p0orfbn01lqtf94jjt099zb64x5gqnnnpa1db9in9rua76na"; // Ajoute ton refresh token ici
 
-        let firstStreamRendered = false;
+    const baseUrl = "https://api.twitch.tv/helix/streams";
+    const params = "?game_id=32982&language=fr";
 
-        // Simuler une récupération des joueurs connectés
-        async function fetchPlayerCount() {
-        const apiUrl = "https://servers-frontend.fivem.net/api/servers/single/zy4bx9"; // Remplace <endpointID> par le bon ID
+    let firstStreamRendered = false;
+
+    // ✅ Rafraîchit automatiquement le token toutes les 4 heures
+    async function refreshAccessToken() {
+        try {
+            const response = await fetch("https://id.twitch.tv/oauth2/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    grant_type: "refresh_token",
+                    refresh_token: refreshToken
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.access_token) {
+                accessToken = data.access_token;
+                refreshToken = data.refresh_token;
+                console.log("🔄 Nouveau Access Token :", accessToken);
+            } else {
+                console.error("❌ Erreur lors du rafraîchissement :", data);
+            }
+        } catch (error) {
+            console.error("❌ Impossible de rafraîchir le token :", error);
+        }
+    }
+
+    setInterval(refreshAccessToken, 4 * 60 * 60 * 1000); // Rafraîchissement toutes les 4 heures
+
+    // ✅ Simuler une récupération des joueurs connectés
+    async function fetchPlayerCount() {
+        const apiUrl = "https://servers-frontend.fivem.net/api/servers/single/zy4bx9";
 
         try {
             const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error("Erreur lors de la récupération des données du serveur.");
+            if (!response.ok) throw new Error("Erreur serveur.");
 
             const data = await response.json();
-            const playerCount = data.Data.clients || 0; // Nombre de joueurs connectés
+            const playerCount = data.Data.clients || 0;
             document.getElementById("player-count").textContent = `Joueurs connectés : ${playerCount} / 180`;
         } catch (error) {
             console.error("Erreur :", error);
             document.getElementById("player-count").textContent = "Impossible de récupérer les joueurs.";
         }
 
-            setTimeout(() => {
-            fetchPlayerCount();
-        }, 30000);
+        setTimeout(fetchPlayerCount, 30000);
     }
 
+    function connectToServer() {
+        window.location.href = "fivem://connect/cfx.re/join/zy4bx9";
+    }
 
-        function connectToServer() {
-            // Remplacez l'adresse par celle de votre serveur FiveM
-            window.location.href = "fivem://connect/cfx.re/join/zy4bx9";
-        }
+    // ✅ Récupération des streamers Twitch avec token mis à jour
+    async function fetchStreamers(pagination = null) {
+        try {
+            const url = pagination ? `${baseUrl}${params}&after=${pagination}` : `${baseUrl}${params}`;
 
-        async function fetchStreamers(pagination = null) {
-            try {
-                const url = pagination
-                    ? `${baseUrl}${params}&after=${pagination}`
-                    : `${baseUrl}${params}`;
+            console.log("🔍 Requête vers Twitch API :", url);
 
-                console.log("Requête vers Twitch API :", url);
-
-                const response = await fetch(url, {
-                    method: "GET",
-                    headers: {
-                        "Client-ID": clientId,
-                        "Authorization": `Bearer ${accessToken}`,
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erreur API Twitch : ${response.status} ${response.statusText}`);
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Client-ID": clientId,
+                    "Authorization": `Bearer ${accessToken}`
                 }
+            });
 
-                const data = await response.json();
-                console.log("Données de l'API Twitch :", data);
-
-                return data;
-            } catch (error) {
-                console.error("Erreur lors de la récupération des données Twitch :", error);
-                document.getElementById("error-message").textContent =
-                    "Impossible de charger les streamers. Veuillez réessayer plus tard.";
-                return null;
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.warn("⚠️ Token expiré, tentative de rafraîchissement...");
+                    await refreshAccessToken();
+                    return fetchStreamers(pagination);
+                }
+                throw new Error(`Erreur API Twitch : ${response.status} ${response.statusText}`);
             }
+
+            const data = await response.json();
+            console.log("🎥 Streams récupérés :", data);
+
+            return data;
+        } catch (error) {
+            console.error("❌ Impossible de charger les streamers :", error);
+            document.getElementById("error-message").textContent = "Impossible de charger les streamers.";
+            return null;
         }
+    }
 
-        async function renderPaginatedStreamers() {
-            let pagination = null;
-            let allStreamsFetched = false;
+    // ✅ Affichage des streamers Twitch
+    async function renderPaginatedStreamers() {
+        let pagination = null;
+        let allStreamsFetched = false;
+        const streamerList = document.getElementById("streamers");
+        const loadingMessage = document.getElementById("loading-message");
 
-            const streamerList = document.getElementById("streamers");
-            const loadingMessage = document.getElementById("loading-message");
+        while (!allStreamsFetched) {
+            const data = await fetchStreamers(pagination);
 
-            while (!allStreamsFetched) {
-                const data = await fetchStreamers(pagination);
+            if (!data) {
+                allStreamsFetched = true;
+                break;
+            }
 
-                if (!data) {
-                    allStreamsFetched = true;
-                    break;
-                }
+            const streamsBeforeFilter = data.data || [];
+            console.log("📊 Nombre de streams avant filtrage :", streamsBeforeFilter.length);
 
-                const streamsBeforeFilter = data.data || [];
-                console.log("Nombre total de streams avant filtrage :", streamsBeforeFilter.length);
+            // 🎯 Filtrer les streams contenant "[LaCreme]", "lcrp", "lacreme" ou "lacreme-rp"
+            const filteredStreamers = streamsBeforeFilter.filter(stream => {
+                const title = stream.title || "";
+                return ["lacremerp", "lcrp", "lacreme", "lacreme-rp"].some(keyword => 
+                    title.toLowerCase().includes(keyword)
+                );
+            });
 
-                // Filtrer les streams contenant "[LaCreme]", "lcrp", "lacreme" ou "lacreme-rp"
-                const filteredStreamers = streamsBeforeFilter.filter(stream => {
-                    const title = stream.title || "";
-                    return ["lacremerp", "lcrp", "lacreme", "lacreme-rp"].some(keyword => 
-                        title.toLowerCase().includes(keyword)
-                    );
-                });
+            console.log("🎯 Streams filtrés :", filteredStreamers);
 
-                console.log("Streams filtrés :", filteredStreamers);
+            filteredStreamers.forEach(stream => {
+                try {
+                    const card = document.createElement("div");
+                    card.className = "streamer-card";
 
-                filteredStreamers.forEach(stream => {
-                    try {
-                        const card = document.createElement("div");
-                        card.className = "streamer-card";
+                    const thumbnailUrl = (stream.thumbnail_url || "")
+                        .replace("{width}", "320")
+                        .replace("{height}", "180");
 
-                        const thumbnailUrl = (stream.thumbnail_url || "")
-                            .replace("{width}", "320")
-                            .replace("{height}", "180");
+                    const twitchUrl = `https://www.twitch.tv/${stream.user_name}`;
 
-                        const twitchUrl = `https://www.twitch.tv/${stream.user_name}`;
+                    card.innerHTML = `
+                        <a href="${twitchUrl}" target="_blank">
+                            <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
+                        </a>
+                        <div class="streamer-info">
+                            <div class="streamer-title">${stream.title}</div>
+                            <div class="streamer-name">Par ${stream.user_name}</div>
+                            <div class="viewer-count">${stream.viewer_count} spectateurs</div>
+                        </div>
+                    `;
+                    streamerList.appendChild(card);
 
-                        card.innerHTML = `
-                            <a href="${twitchUrl}" target="_blank">
-                                <img class="thumbnail" src="${thumbnailUrl}" alt="Miniature de ${stream.user_name}">
-                            </a>
-                            <div class="streamer-info">
-                                <div class="streamer-title">${stream.title}</div>
-                                <div class="streamer-name">Par ${stream.user_name}</div>
-                                <div class="viewer-count">${stream.viewer_count} spectateurs</div>
-                            </div>
-                        `;
-                        streamerList.appendChild(card);
-
-                        // Supprimer le message de chargement dès le premier stream
-                        if (!firstStreamRendered && loadingMessage) {
-                            loadingMessage.style.display = "none";
-                            firstStreamRendered = true;
-                        }
-                    } catch (err) {
-                        console.error("Erreur lors du rendu d'un streamer :", err);
+                    if (!firstStreamRendered && loadingMessage) {
+                        loadingMessage.style.display = "none";
+                        firstStreamRendered = true;
                     }
-                });
-
-                // Gérer la pagination
-                pagination = data.pagination && data.pagination.cursor;
-                if (!pagination) {
-                    allStreamsFetched = true;
+                } catch (err) {
+                    console.error("❌ Erreur lors du rendu d'un streamer :", err);
                 }
-            }
+            });
 
-            // Si aucun streamer n'a été rendu, afficher un message
-            if (!firstStreamRendered) {
-                loadingMessage.style.display = "none";
-                streamerList.innerHTML = "<p>Aucun streamer trouvé avec [LaCreme].</p>";
-            }
+            pagination = data.pagination && data.pagination.cursor;
+            if (!pagination) allStreamsFetched = true;
         }
 
-        // Lancement initial
-        fetchPlayerCount();
-        renderPaginatedStreamers();
-    </script>
+        if (!firstStreamRendered) {
+            loadingMessage.style.display = "none";
+            streamerList.innerHTML = "<p>Aucun streamer trouvé avec [LaCreme].</p>";
+        }
+    }
+
+    // ✅ Lancement des fonctions
+    fetchPlayerCount();
+    renderPaginatedStreamers();
+</script>
+
 </body>
 </html>
