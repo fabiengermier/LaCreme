@@ -50,12 +50,12 @@ async function renderStreamers() {
     </a>
   `).join('');
 
-  document.getElementById("clips").innerHTML = clips.map(clip => `
+  /**document.getElementById("clips").innerHTML = clips.map(clip => `
     <a href="${clip.url}" target="_blank" class="border bg-white p-4 rounded shadow hover:shadow-lg">
       <img src="${clip.thumbnail_url}" alt="${clip.title}" class="w-full h-40 object-cover rounded" />
       <div class="mt-2 font-bold text-sm">${clip.title}</div>
     </a>
-  `).join('');
+  `).join('');**/
 }
 
 renderStreamers();
