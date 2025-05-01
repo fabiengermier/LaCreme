@@ -29,7 +29,7 @@ async function getLiveStreams(accessToken) {
   if (!gta) return [];
 
   // Query French GTA streams
-  const response = await fetch(`https://api.twitch.tv/helix/streams?game_id=${gta.id}&language=fr&first=100`, {
+  const response = await fetch(`https://api.twitch.tv/helix/streams?game_id=${gta.id}&language=fr&first=500`, {
     headers: {
       "Client-ID": clientId,
       "Authorization": `Bearer ${accessToken}`
