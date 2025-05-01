@@ -3,6 +3,7 @@ const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
 const clientSecret = "l2age2j6nq3cvl76yprtvk2xoswaw0";
 
 async function getAccessToken() {
+  console.log("get access token");
   const res = await fetch("https://id.twitch.tv/oauth2/token", {
     method: "POST",
     body: new URLSearchParams({
