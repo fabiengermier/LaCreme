@@ -3,7 +3,6 @@ const clientId = "t2pn7wgvgslmampkngyqjb4a7yxd6b";
 const clientSecret = "l2age2j6nq3cvl76yprtvk2xoswaw0";
 
 async function getAccessToken() {
-  console.log("get access token");
   const res = await fetch("https://id.twitch.tv/oauth2/token", {
     method: "POST",
     body: new URLSearchParams({
@@ -61,31 +60,63 @@ async function getLiveStreams(accessToken) {
 }
 
 async function renderStreamers() {
-  console.log("render streamers");
   const accessToken = await getAccessToken();
   const streamers = await getLiveStreams(accessToken);
 
-  /**const clips = streamers.slice(0, 5).map((s, i) => ({
-    title: `Clip ${i + 1} - ${s.user_name}`,
-    thumbnail_url: s.thumbnail_url.replace("{width}", "320").replace("{height}", "180"),
-    url: `https://twitch.tv/${s.user_name}/clip`
-  }));**/
+  /*
+const staticUsers = ["gotaga", "kamet0", "alpha", "kotei", "baghera"].slice(0, 5);
+const clips = await Promise.all(staticUsers.map(async (login) => {
+  const userRes = await fetch(`https://api.twitch.tv/helix/users?login=${login}`, {
+    headers: {
+      "Client-ID": clientId,
+      "Authorization": `Bearer ${accessToken}`
+    }
+  });
+  const userData = await userRes.json();
+  const user = userData.data?.[0];
+  if (!user) return null;
+
+  const clipRes = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${user.id}&first=1`, {
+    headers: {
+      "Client-ID": clientId,
+      "Authorization": `Bearer ${accessToken}`
+    }
+  });
+  const clipData = await clipRes.json();
+  const clip = clipData.data?.[0];
+  return clip ? {
+    title: clip.title,
+    thumbnail_url: clip.thumbnail_url,
+    url: clip.url
+  } : null;
+}));
+*/
+    const clipData = await res.json();
+    const clip = clipData.data?.[0];
+    return clip ? {
+      title: clip.title,
+      thumbnail_url: clip.thumbnail_url,
+      url: clip.url
+    } : null;
+  }));
 
   document.getElementById("streamers").innerHTML = streamers.map(stream => `
     <a href="https://twitch.tv/${stream.user_name}" target="_blank" class="border bg-white p-4 rounded shadow hover:shadow-lg">
-      <img src="${stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')}" class="w-full h-40 object-cover rounded" />
+      <img src="${stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')}" class="w-[320px] h-[180px] object-cover rounded mx-auto" />
       <div class="mt-2 font-bold text-lg">${stream.user_name}</div>
       <div class="text-sm text-gray-500">👁️ ${stream.viewer_count} viewers</div>
       <div class="text-xs text-gray-400 mt-1">Titre: ${stream.title}</div>
     </a>
   `).join('');
 
-  /**document.getElementById("clips").innerHTML = clips.map(clip => `
-    <a href="${clip.url}" target="_blank" class="border bg-white p-4 rounded shadow hover:shadow-lg">
-      <img src="${clip.thumbnail_url}" alt="${clip.title}" class="w-full h-40 object-cover rounded" />
-      <div class="mt-2 font-bold text-sm">${clip.title}</div>
-    </a>
-  `).join('');**/
+  /*
+document.getElementById("clips").innerHTML = clips.map(clip => `
+  <a href="${clip.url}" target="_blank" class="border bg-white p-4 rounded shadow hover:shadow-lg">
+    <img src="${clip.thumbnail_url}" alt="${clip.title}" class="w-full h-40 object-cover rounded" />
+    <div class="mt-2 font-bold text-sm">${clip.title}</div>
+  </a>
+`).join('');
+*/
 }
 
 renderStreamers();
@@ -126,8 +157,4 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll('h2').forEach(h => h.classList.add('glitch-title'));
-});
-
-document.getElementById("toggleDark")?.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
 });
