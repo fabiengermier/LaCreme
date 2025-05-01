@@ -17,6 +17,7 @@ async function getAccessToken() {
 }
 
 async function getLiveStreams(accessToken) {
+  console.log("get live streams");
   const query = tagsToMatch.map(tag => `title=${encodeURIComponent(tag)}`).join('&');
   const response = await fetch(`https://api.twitch.tv/helix/streams?first=100`, {
     headers: {
@@ -32,6 +33,7 @@ async function getLiveStreams(accessToken) {
 }
 
 async function renderStreamers() {
+  console.log("render streamers");
   const accessToken = await getAccessToken();
   const streamers = await getLiveStreams(accessToken);
 
