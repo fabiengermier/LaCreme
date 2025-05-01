@@ -17,9 +17,19 @@ async function getAccessToken() {
 }
 
 async function getLiveStreams(accessToken) {
-  console.log("get live streams");
-  const query = tagsToMatch.map(tag => `title=${encodeURIComponent(tag)}`).join('&');
-  const response = await fetch(`https://api.twitch.tv/helix/streams?first=100`, {
+  // Get GTA V game_id
+  const gameRes = await fetch("https://api.twitch.tv/helix/games?name=Grand%20Theft%20Auto%20V", {
+    headers: {
+      "Client-ID": clientId,
+      "Authorization": `Bearer ${accessToken}`
+    }
+  });
+  const gameJson = await gameRes.json();
+  const gta = gameJson.data?.[0];
+  if (!gta) return [];
+
+  // Query French GTA streams
+  const response = await fetch(`https://api.twitch.tv/helix/streams?game_id=${gta.id}&language=fr&first=100`, {
     headers: {
       "Client-ID": clientId,
       "Authorization": `Bearer ${accessToken}`
