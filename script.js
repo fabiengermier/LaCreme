@@ -91,14 +91,6 @@ const clips = await Promise.all(staticUsers.map(async (login) => {
   } : null;
 }));
 */
-    const clipData = await res.json();
-    const clip = clipData.data?.[0];
-    return clip ? {
-      title: clip.title,
-      thumbnail_url: clip.thumbnail_url,
-      url: clip.url
-    } : null;
-  };
 
   document.getElementById("streamers").innerHTML = streamers.map(stream => `
     <a href="https://twitch.tv/${stream.user_name}" target="_blank" class="border bg-white p-4 rounded shadow hover:shadow-lg">
