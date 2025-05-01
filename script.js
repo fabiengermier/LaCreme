@@ -28,15 +28,33 @@ async function getLiveStreams(accessToken) {
   const gta = gameJson.data?.[0];
   if (!gta) return [];
 
-  // Query French GTA streams
-  const response = await fetch(`https://api.twitch.tv/helix/streams?game_id=${gta.id}&language=fr&first=500`, {
-    headers: {
-      "Client-ID": clientId,
-      "Authorization": `Bearer ${accessToken}`
-    }
-  });
-  const json = await response.json();
-  return json.data.filter(stream => {
+  // Fetch multiple pages of GTA streams in FR
+  let streams = [];
+  let cursor = null;
+  let pages = 0;
+  const maxPages = 5;
+
+  while (pages < maxPages) {
+    const url = new URL("https://api.twitch.tv/helix/streams");
+    url.searchParams.set("game_id", gta.id);
+    url.searchParams.set("language", "fr");
+    url.searchParams.set("first", "100");
+    if (cursor) url.searchParams.set("after", cursor);
+
+    const response = await fetch(url, {
+      headers: {
+        "Client-ID": clientId,
+        "Authorization": `Bearer ${accessToken}`
+      }
+    });
+    const json = await response.json();
+    streams = streams.concat(json.data);
+    cursor = json.pagination?.cursor;
+    if (!cursor) break;
+    pages++;
+  }
+
+  return streams.filter(stream => {
     const title = stream.title.toLowerCase();
     return tagsToMatch.some(tag => title.includes(tag));
   });
