@@ -35,11 +35,11 @@ async function renderStreamers() {
   const accessToken = await getAccessToken();
   const streamers = await getLiveStreams(accessToken);
 
-  const clips = streamers.slice(0, 5).map((s, i) => ({
+  /**const clips = streamers.slice(0, 5).map((s, i) => ({
     title: `Clip ${i + 1} - ${s.user_name}`,
     thumbnail_url: s.thumbnail_url.replace("{width}", "320").replace("{height}", "180"),
     url: `https://twitch.tv/${s.user_name}/clip`
-  }));
+  }));**/
 
   document.getElementById("streamers").innerHTML = streamers.map(stream => `
     <a href="https://twitch.tv/${stream.user_name}" target="_blank" class="border bg-white p-4 rounded shadow hover:shadow-lg">
