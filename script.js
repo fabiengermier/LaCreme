@@ -93,7 +93,7 @@ const clips = await Promise.all(staticUsers.map(async (login) => {
 */
 
    document.getElementById("streamers").innerHTML = streamers.map(stream => `
-    <a href="https://twitch.tv/${stream.user_name}" target="_blank" class="border bg-white rounded shadow hover:shadow-lg mp-4 w-full h-full" style="max-width:63%">
+    <a href="https://twitch.tv/${stream.user_name}" target="_blank" class="border bg-white rounded shadow hover:shadow-lg p-4 w-full h-full" style="max-width:63%">
       <img src="${stream.thumbnail_url.replace('{width}', '320').replace('{height}', '180')}" class="w-[320px] h-[180px] object-cover rounded mx-auto" style="margin-top:5px;"/>
       <div class="mt-2 font-bold text-lg" style="margin-left:5px;">${stream.user_name}</div>
       <div class="text-sm text-gray-500" style="margin-left:5px;">👁️ ${stream.viewer_count} viewers</div>
