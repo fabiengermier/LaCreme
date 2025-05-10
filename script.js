@@ -149,4 +149,10 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll('h2').forEach(h => h.classList.add('glitch-title'));
+
+  // Call immediately
+  renderStreamers();
+
+  // Refresh every 5 minutes
+  setInterval(renderStreamers, 300000);
 });
